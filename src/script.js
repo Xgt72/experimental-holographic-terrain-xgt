@@ -102,6 +102,7 @@ terrain.texture.update = () => {
   terrain.texture.context.globalAlpha = terrain.texture.smallLineAlpha;
 
   for (let i = 0; i < smallLinesCount; i++) {
+    terrain.texture.context.fillStyle = "#00ffff";
     terrain.texture.context.fillRect(
       0,
       actualBigLineWidth +

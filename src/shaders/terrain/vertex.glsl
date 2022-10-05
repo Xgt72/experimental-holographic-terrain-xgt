@@ -1,6 +1,7 @@
 uniform float uTime;
 
 varying float vElevation;
+varying vec2 vUv;
 
 #pragma glslify: getElevation = require('../partials/getElevation.glsl')
 
@@ -17,4 +18,5 @@ void main() {
 
     // Varyings
     vElevation = elevation;
+    vUv = uv;
 }
