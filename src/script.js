@@ -10,6 +10,8 @@ import terrainVertexShader from "./shaders/terrain/vertex.glsl";
 import terrainFragmentShader from "./shaders/terrain/fragment.glsl";
 import terrainDepthVertexShader from "./shaders/terrainDepth/vertex.glsl";
 import terrainDepthFragmentShader from "./shaders/terrainDepth/fragment.glsl";
+import vignetteVertexShader from "./shaders/vignette/vertex.glsl";
+import vignetteFragmentShader from "./shaders/vignette/fragment.glsl";
 
 /**
  * Base
@@ -49,11 +51,12 @@ const terrain = {};
 
 // Texture
 terrain.texture = {};
+terrain.texture.visible = false;
 terrain.texture.linesCount = 5;
 terrain.texture.bigLineWidth = 0.08;
 terrain.texture.smallLineWidth = 0.01;
 terrain.texture.smallLineAlpha = 0.5;
-terrain.texture.width = 32;
+terrain.texture.width = 1;
 terrain.texture.height = 128;
 terrain.texture.canvas = document.createElement("canvas");
 terrain.texture.canvas.width = terrain.texture.width;
@@ -61,8 +64,12 @@ terrain.texture.canvas.height = terrain.texture.height;
 terrain.texture.canvas.style.position = "fixed";
 terrain.texture.canvas.style.top = 0;
 terrain.texture.canvas.style.left = 0;
+terrain.texture.canvas.style.width = "50px";
+terrain.texture.canvas.style.height = `${terrain.texture.height}px`;
 terrain.texture.canvas.style.zIndex = 1;
-document.body.append(terrain.texture.canvas);
+if (terrain.texture.visible) {
+  document.body.append(terrain.texture.canvas);
+}
 
 terrain.texture.context = terrain.texture.canvas.getContext("2d");
 
@@ -139,6 +146,21 @@ gui.Register({
   max: 10,
   step: 1,
   onChange: terrain.texture.update,
+});
+
+gui.Register({
+  folder: "terrainTexture",
+  object: terrain.texture,
+  property: "visible",
+  type: "checkbox",
+  label: "visible",
+  onChange: () => {
+    if (terrain.texture.visible) {
+      document.body.append(terrain.texture.canvas);
+    } else {
+      document.body.removeChild(terrain.texture.canvas);
+    }
+  },
 });
 
 gui.Register({
@@ -429,12 +451,22 @@ terrain.mesh.scale.set(10, 10, 10);
 terrain.mesh.userData.depthMaterial = terrain.depthMaterial;
 
 scene.add(terrain.mesh);
-// const cube = new THREE.Mesh(
-//   new THREE.BoxBufferGeometry(1, 1, 1),
-//   new THREE.MeshBasicMaterial({ color: "#ff0000" })
-// );
 
-// scene.add(cube);
+/**
+ * Vignette
+ */
+const vignette = {};
+vignette.geometry = new THREE.PlaneGeometry(2, 2);
+vignette.material = new THREE.ShaderMaterial({
+  vertexShader: vignetteVertexShader,
+  fragmentShader: vignetteFragmentShader,
+  transparent: true,
+  depthTest: false,
+});
+vignette.mesh = new THREE.Mesh(vignette.geometry, vignette.material);
+vignette.mesh.userData.noBokeh = true;
+vignette.mesh.frustumCulled = false;
+scene.add(vignette.mesh);
 
 /**
  * Sizes
