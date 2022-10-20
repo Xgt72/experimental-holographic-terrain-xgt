@@ -10,6 +10,8 @@ import terrainVertexShader from "./shaders/terrain/vertex.glsl";
 import terrainFragmentShader from "./shaders/terrain/fragment.glsl";
 import terrainDepthVertexShader from "./shaders/terrainDepth/vertex.glsl";
 import terrainDepthFragmentShader from "./shaders/terrainDepth/fragment.glsl";
+import vignetteVertexShader from "./shaders/vignette/vertex.glsl";
+import vignetteFragmentShader from "./shaders/vignette/fragment.glsl";
 
 /**
  * Base
@@ -28,7 +30,7 @@ const gui = new Guify({
   // title: "Some Title",
   align: "right",
   theme: "dark",
-  // width: "300",
+  width: "480px",
   barMode: "none",
 });
 
@@ -42,18 +44,19 @@ guiDummy.clearColor = "#080024";
 gui.Register({
   type: "folder",
   label: "terrain",
-  open: true,
+  open: false,
 });
 
 const terrain = {};
 
 // Texture
 terrain.texture = {};
+terrain.texture.visible = false;
 terrain.texture.linesCount = 5;
 terrain.texture.bigLineWidth = 0.08;
 terrain.texture.smallLineWidth = 0.01;
 terrain.texture.smallLineAlpha = 0.5;
-terrain.texture.width = 32;
+terrain.texture.width = 1;
 terrain.texture.height = 128;
 terrain.texture.canvas = document.createElement("canvas");
 terrain.texture.canvas.width = terrain.texture.width;
@@ -61,8 +64,12 @@ terrain.texture.canvas.height = terrain.texture.height;
 terrain.texture.canvas.style.position = "fixed";
 terrain.texture.canvas.style.top = 0;
 terrain.texture.canvas.style.left = 0;
+terrain.texture.canvas.style.width = "50px";
+terrain.texture.canvas.style.height = `${terrain.texture.height}px`;
 terrain.texture.canvas.style.zIndex = 1;
-document.body.append(terrain.texture.canvas);
+if (terrain.texture.visible) {
+  document.body.append(terrain.texture.canvas);
+}
 
 terrain.texture.context = terrain.texture.canvas.getContext("2d");
 
@@ -144,6 +151,21 @@ gui.Register({
 gui.Register({
   folder: "terrainTexture",
   object: terrain.texture,
+  property: "visible",
+  type: "checkbox",
+  label: "visible",
+  onChange: () => {
+    if (terrain.texture.visible) {
+      document.body.append(terrain.texture.canvas);
+    } else {
+      document.body.removeChild(terrain.texture.canvas);
+    }
+  },
+});
+
+gui.Register({
+  folder: "terrainTexture",
+  object: terrain.texture,
   property: "bigLineWidth",
   type: "range",
   label: "bigLineWidth",
@@ -185,7 +207,14 @@ terrain.geometry.rotateX(-Math.PI * 0.5);
 terrain.uniforms = {
   uTexture: { value: terrain.texture.instance },
   uElevation: { value: 2 },
+  uElevationValley: { value: 0.4 },
+  uElevationValleyFrequency: { value: 1.5 },
+  uElevationGeneral: { value: 0.2 },
+  uElevationGeneralFrequency: { value: 0.2 },
+  uElevationDetails: { value: 0.2 },
+  uElevationDetailsFrequency: { value: 2.012 },
   uTextureFrequency: { value: 10 },
+  uTextureOffset: { value: 0.585 },
   uTime: { value: 0 },
   uHslHue: { value: 1.0 },
   uHslHueOffset: { value: 0.0 },
@@ -216,6 +245,72 @@ gui.Register({
 
 gui.Register({
   folder: "terrainMaterial",
+  object: terrain.uniforms.uElevationValley,
+  property: "value",
+  type: "range",
+  label: "uElevationValley",
+  min: 0,
+  max: 1,
+  step: 0.001,
+});
+
+gui.Register({
+  folder: "terrainMaterial",
+  object: terrain.uniforms.uElevationValleyFrequency,
+  property: "value",
+  type: "range",
+  label: "uElevationValleyFrequency",
+  min: 0,
+  max: 10,
+  step: 0.001,
+});
+
+gui.Register({
+  folder: "terrainMaterial",
+  object: terrain.uniforms.uElevationGeneral,
+  property: "value",
+  type: "range",
+  label: "uElevationGeneral",
+  min: 0,
+  max: 1,
+  step: 0.001,
+});
+
+gui.Register({
+  folder: "terrainMaterial",
+  object: terrain.uniforms.uElevationGeneralFrequency,
+  property: "value",
+  type: "range",
+  label: "uElevationGeneralFrequency",
+  min: 0,
+  max: 10,
+  step: 0.01,
+});
+
+gui.Register({
+  folder: "terrainMaterial",
+  object: terrain.uniforms.uElevationDetails,
+  property: "value",
+  type: "range",
+  label: "uElevationDetails",
+  min: 0,
+  max: 1,
+  step: 0.001,
+});
+
+gui.Register({
+  folder: "terrainMaterial",
+  object: terrain.uniforms.uElevationDetailsFrequency,
+  property: "value",
+  type: "range",
+  label: "uElevationDetailsFrequency",
+  min: 0,
+  max: 10,
+  step: 0.01,
+});
+
+gui.Register({
+  folder: "terrainMaterial",
   object: terrain.uniforms.uTextureFrequency,
   property: "value",
   type: "range",
@@ -223,6 +318,17 @@ gui.Register({
   min: 0.01,
   max: 50,
   step: 0.01,
+});
+
+gui.Register({
+  folder: "terrainMaterial",
+  object: terrain.uniforms.uTextureOffset,
+  property: "value",
+  type: "range",
+  label: "uTextureOffset",
+  min: 0,
+  max: 1,
+  step: 0.001,
 });
 
 // uHslHue
@@ -345,12 +451,73 @@ terrain.mesh.scale.set(10, 10, 10);
 terrain.mesh.userData.depthMaterial = terrain.depthMaterial;
 
 scene.add(terrain.mesh);
-// const cube = new THREE.Mesh(
-//   new THREE.BoxBufferGeometry(1, 1, 1),
-//   new THREE.MeshBasicMaterial({ color: "#ff0000" })
-// );
 
-// scene.add(cube);
+/**
+ * Vignette
+ */
+const vignette = {};
+vignette.color = {};
+vignette.color.value = "#6800ff";
+vignette.color.instance = new THREE.Color(vignette.color.value);
+
+vignette.geometry = new THREE.PlaneGeometry(2, 2);
+
+vignette.material = new THREE.ShaderMaterial({
+  uniforms: {
+    uColor: { value: vignette.color.instance },
+    uMultiplier: { value: 1.16 },
+    uOffset: { value: -0.165 },
+  },
+  vertexShader: vignetteVertexShader,
+  fragmentShader: vignetteFragmentShader,
+  transparent: true,
+  depthTest: false,
+});
+
+vignette.mesh = new THREE.Mesh(vignette.geometry, vignette.material);
+vignette.mesh.userData.noBokeh = true;
+vignette.mesh.frustumCulled = false;
+scene.add(vignette.mesh);
+
+gui.Register({
+  type: "folder",
+  label: "vignette",
+  open: true,
+});
+
+gui.Register({
+  folder: "vignette",
+  object: vignette.color,
+  property: "value",
+  type: "color",
+  label: "color",
+  format: "hex",
+  onChange: () => {
+    vignette.color.instance.set(vignette.color.value);
+  },
+});
+
+gui.Register({
+  folder: "vignette",
+  object: vignette.material.uniforms.uMultiplier,
+  property: "value",
+  type: "range",
+  label: "uMultiplier",
+  min: 0,
+  max: 5,
+  step: 0.001,
+});
+
+gui.Register({
+  folder: "vignette",
+  object: vignette.material.uniforms.uOffset,
+  property: "value",
+  type: "range",
+  label: "uOffset",
+  min: -2,
+  max: 2,
+  step: 0.001,
+});
 
 /**
  * Sizes
@@ -392,7 +559,7 @@ const camera = new THREE.PerspectiveCamera(
   75,
   sizes.width / sizes.height,
   0.1,
-  100
+  30
 );
 camera.position.x = 1;
 camera.position.y = 1;

@@ -88,11 +88,13 @@ class BokehPass extends Pass {
 
     this.scene.traverse((_child) => {
       if (_child instanceof Mesh) {
-        _child.userData.originalMaterial = _child.material;
-        if (_child.userData.depthMaterial) {
-          _child.material = _child.userData.depthMaterial;
-        } else {
-          _child.material = this.materialDepth;
+        if (!_child.userData.noBokeh) {
+          _child.userData.originalMaterial = _child.material;
+          if (_child.userData.depthMaterial) {
+            _child.material = _child.userData.depthMaterial;
+          } else {
+            _child.material = this.materialDepth;
+          }
         }
       }
     });
@@ -126,7 +128,9 @@ class BokehPass extends Pass {
     // this.scene.overrideMaterial = null;
     this.scene.traverse((_child) => {
       if (_child instanceof Mesh) {
-        _child.material = _child.userData.originalMaterial;
+        if (!_child.userData.noBokeh) {
+          _child.material = _child.userData.originalMaterial;
+        }
       }
     });
 
