@@ -4,7 +4,6 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import Guify from "guify";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
-// import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass.js";
 import { BokehPass } from "./passes/BokehPass.js";
 import terrainVertexShader from "./shaders/terrain/vertex.glsl";
 import terrainFragmentShader from "./shaders/terrain/fragment.glsl";
@@ -561,15 +560,25 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   30
 );
+camera.rotation.reorder("YXZ");
 camera.position.x = 1;
 camera.position.y = 1;
-camera.position.z = 1;
+camera.position.z = 0;
 
 scene.add(camera);
 
-// Controls
-const controls = new OrbitControls(camera, canvas);
-controls.enableDamping = true;
+// Coordinates
+const cameraCoordinates = [
+  {
+    position: { x: -0.001830464, y: 2.124698948, z: -0.172619205 },
+  },
+];
+
+window.camera = camera;
+
+// Orbit controls
+const orbitControls = new OrbitControls(camera, canvas);
+orbitControls.enableDamping = true;
 
 /**
  * Renderer
@@ -693,8 +702,8 @@ const tick = () => {
   // Update terrain
   terrain.uniforms.uTime.value = elapsedTime;
 
-  // Update controls
-  controls.update();
+  // Update orbit controls
+  orbitControls.update();
 
   // Render
   // renderer.render(scene, camera);
