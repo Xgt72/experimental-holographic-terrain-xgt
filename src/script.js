@@ -30,7 +30,7 @@ const gui = new Guify({
   // title: "Some Title",
   align: "right",
   theme: "dark",
-  width: "300",
+  width: "480px",
   barMode: "none",
 });
 
@@ -44,7 +44,7 @@ guiDummy.clearColor = "#080024";
 gui.Register({
   type: "folder",
   label: "terrain",
-  open: true,
+  open: false,
 });
 
 const terrain = {};
@@ -456,17 +456,68 @@ scene.add(terrain.mesh);
  * Vignette
  */
 const vignette = {};
+vignette.color = {};
+vignette.color.value = "#6800ff";
+vignette.color.instance = new THREE.Color(vignette.color.value);
+
 vignette.geometry = new THREE.PlaneGeometry(2, 2);
+
 vignette.material = new THREE.ShaderMaterial({
+  uniforms: {
+    uColor: { value: vignette.color.instance },
+    uMultiplier: { value: 1.16 },
+    uOffset: { value: -0.165 },
+  },
   vertexShader: vignetteVertexShader,
   fragmentShader: vignetteFragmentShader,
   transparent: true,
   depthTest: false,
 });
+
 vignette.mesh = new THREE.Mesh(vignette.geometry, vignette.material);
 vignette.mesh.userData.noBokeh = true;
 vignette.mesh.frustumCulled = false;
 scene.add(vignette.mesh);
+
+gui.Register({
+  type: "folder",
+  label: "vignette",
+  open: true,
+});
+
+gui.Register({
+  folder: "vignette",
+  object: vignette.color,
+  property: "value",
+  type: "color",
+  label: "color",
+  format: "hex",
+  onChange: () => {
+    vignette.color.instance.set(vignette.color.value);
+  },
+});
+
+gui.Register({
+  folder: "vignette",
+  object: vignette.material.uniforms.uMultiplier,
+  property: "value",
+  type: "range",
+  label: "uMultiplier",
+  min: 0,
+  max: 5,
+  step: 0.001,
+});
+
+gui.Register({
+  folder: "vignette",
+  object: vignette.material.uniforms.uOffset,
+  property: "value",
+  type: "range",
+  label: "uOffset",
+  min: -2,
+  max: 2,
+  step: 0.001,
+});
 
 /**
  * Sizes
@@ -508,7 +559,7 @@ const camera = new THREE.PerspectiveCamera(
   75,
   sizes.width / sizes.height,
   0.1,
-  100
+  30
 );
 camera.position.x = 1;
 camera.position.y = 1;

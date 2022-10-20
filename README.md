@@ -17,3 +17,7 @@ npm run dev
 # Build for production in the dist/ directory
 npm run build
 ```
+
+## Font
+
+- https://befonts.com/ailerons-typeface.html
