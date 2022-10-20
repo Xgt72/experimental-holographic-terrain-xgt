@@ -40,4 +40,42 @@ body {
   font-weight: 400;
   text-transform: uppercase;
   outline: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+}
+
+.menu .bar {
+  width: 50%;
+  height: 2px;
+  margin-bottom: 6px;
+  background-color: #ffffff;
+}
+
+.credits {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  color: #ffffff;
+  text-align: right;
+  font-family: "Roboto", sans-serif;
+  display: flex;
+}
+
+.credits a {
+  color: inherit;
+  margin-right: 10px;
 }
