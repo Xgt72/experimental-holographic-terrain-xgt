@@ -72,8 +72,10 @@ body {
   color: #ffffff;
   text-align: right;
   font-family: "Roboto", sans-serif;
+  display: flex;
 }
 
 .credits a {
   color: inherit;
+  margin-right: 10px;
 }
