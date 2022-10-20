@@ -1,19 +1,43 @@
-*
-{
-    margin: 0;
-    padding: 0;
+@font-face {
+  font-family: "Ailerons";
+  src: url("./fonts/Ailerons\ Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+*::selection {
+  /* color: #6800ff; */
+  background-color: #6800ff22;
 }
 
 html,
-body
-{
-    overflow: hidden;
+body {
+  overflow: hidden;
 }
 
-.webgl
-{
-    position: fixed;
-    top: 0;
-    left: 0;
-    outline: none;
+.webgl {
+  position: fixed;
+  top: 0;
+  left: 0;
+  outline: none;
+}
+
+.title {
+  position: absolute;
+  top: calc(50% - 14vmin / 2);
+  left: 0;
+  width: 100%;
+  text-align: center;
+  color: #ffffff;
+  font-family: Ailerons, Arial, Helvetica, sans-serif;
+  font-size: 14vmin;
+  font-weight: 400;
+  text-transform: uppercase;
+  outline: none;
 }
