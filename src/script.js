@@ -567,13 +567,6 @@ camera.position.z = 0;
 
 scene.add(camera);
 
-// Coordinates
-const cameraCoordinates = [
-  {
-    position: { x: -0.001830464, y: 2.124698948, z: -0.172619205 },
-  },
-];
-
 window.camera = camera;
 
 // Orbit controls
@@ -687,6 +680,63 @@ gui.Register({
   max: 0.02,
   step: 0.0001,
 });
+
+/**
+ * View
+ */
+const view = {};
+view.settings = [
+  {
+    position: { x: 0, y: 2.124, z: -0.172 },
+    rotation: { x: -1.489, y: -Math.PI, z: 0 },
+    focus: 2.14,
+  },
+  {
+    position: { x: 1, y: 1.1, z: 0 },
+    rotation: { x: -0.833, y: 1.596, z: 1.651 },
+    focus: 1.1,
+  },
+  {
+    position: { x: 1, y: 0.87, z: -0.97 },
+    rotation: { x: -0.638, y: 2.33, z: 0 },
+    focus: 1.36,
+  },
+  {
+    position: { x: -1.43, y: 0.33, z: -0.144 },
+    rotation: { x: -0.312, y: -1.68, z: 0 },
+    focus: 1.25,
+  },
+];
+
+view.change = (_index) => {
+  const viewSetting = view.settings[_index];
+
+  camera.position.copy(viewSetting.position);
+  camera.rotation.x = viewSetting.rotation.x;
+  camera.rotation.y = viewSetting.rotation.y;
+  camera.rotation.z = viewSetting.rotation.z;
+
+  bokehPass.materialBokeh.uniforms.focus.value = viewSetting.focus;
+};
+
+view.change(0);
+
+gui.Register({
+  type: "folder",
+  label: "view",
+  open: true,
+});
+
+for (const _settingIndex in view.settings) {
+  gui.Register({
+    folder: "view",
+    type: "button",
+    label: `change(${_settingIndex})`,
+    action: () => {
+      view.change(_settingIndex);
+    },
+  });
+}
 
 /**
  * Animate
