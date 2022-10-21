@@ -4,7 +4,6 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import Guify from "guify";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
-// import { BokehPass } from "three/examples/jsm/postprocessing/BokehPass.js";
 import { BokehPass } from "./passes/BokehPass.js";
 import terrainVertexShader from "./shaders/terrain/vertex.glsl";
 import terrainFragmentShader from "./shaders/terrain/fragment.glsl";
@@ -36,6 +35,77 @@ const gui = new Guify({
 
 const guiDummy = {};
 guiDummy.clearColor = "#080024";
+
+/**
+ * Sizes
+ */
+const sizes = {
+  width: window.innerWidth,
+  height: window.innerHeight,
+  pixelRatio: Math.min(window.devicePixelRatio, 2),
+};
+
+window.addEventListener("resize", () => {
+  // Update sizes
+  sizes.width = window.innerWidth;
+  sizes.height = window.innerHeight;
+  sizes.pixelRatio = Math.min(window.devicePixelRatio, 2);
+
+  // Update camera
+  camera.instance.aspect = sizes.width / sizes.height;
+  camera.instance.updateProjectionMatrix();
+
+  // Update renderer
+  renderer.setSize(sizes.width, sizes.height);
+  renderer.setPixelRatio(sizes.pixelRatio);
+
+  // Update effect composer
+  effectComposer.setSize(sizes.width, sizes.height);
+  effectComposer.setPixelRatio(sizes.pixelRatio);
+
+  // Update passes
+  bokehPass.renderTargetDepth.width = sizes.width * sizes.pixelRatio;
+  bokehPass.renderTargetDepth.height = sizes.height * sizes.pixelRatio;
+});
+
+/**
+ * Camera
+ */
+
+const camera = {};
+camera.position = new THREE.Vector3();
+camera.rotation = new THREE.Vector3();
+
+// Base camera
+camera.instance = new THREE.PerspectiveCamera(
+  75,
+  sizes.width / sizes.height,
+  0.1,
+  30
+);
+camera.instance.rotation.reorder("YXZ");
+scene.add(camera.instance);
+
+window.camera = camera;
+
+// Orbit controls
+const orbitControls = new OrbitControls(camera.instance, canvas);
+orbitControls.enabled = false;
+orbitControls.enableDamping = true;
+
+gui.Register({
+  type: "folder",
+  label: "camera",
+  open: false,
+});
+
+gui.Register({
+  folder: "camera",
+  type: "checkbox",
+  label: "orbitControl.enabled",
+  object: orbitControls,
+  property: "enabled",
+});
 
 /**
  * Terrain
@@ -520,58 +590,6 @@ gui.Register({
 });
 
 /**
- * Sizes
- */
-const sizes = {
-  width: window.innerWidth,
-  height: window.innerHeight,
-  pixelRatio: Math.min(window.devicePixelRatio, 2),
-};
-
-window.addEventListener("resize", () => {
-  // Update sizes
-  sizes.width = window.innerWidth;
-  sizes.height = window.innerHeight;
-  sizes.pixelRatio = Math.min(window.devicePixelRatio, 2);
-
-  // Update camera
-  camera.aspect = sizes.width / sizes.height;
-  camera.updateProjectionMatrix();
-
-  // Update renderer
-  renderer.setSize(sizes.width, sizes.height);
-  renderer.setPixelRatio(sizes.pixelRatio);
-
-  // Update effect composer
-  effectComposer.setSize(sizes.width, sizes.height);
-  effectComposer.setPixelRatio(sizes.pixelRatio);
-
-  // Update passes
-  bokehPass.renderTargetDepth.width = sizes.width * sizes.pixelRatio;
-  bokehPass.renderTargetDepth.height = sizes.height * sizes.pixelRatio;
-});
-
-/**
- * Camera
- */
-// Base camera
-const camera = new THREE.PerspectiveCamera(
-  75,
-  sizes.width / sizes.height,
-  0.1,
-  30
-);
-camera.position.x = 1;
-camera.position.y = 1;
-camera.position.z = 1;
-
-scene.add(camera);
-
-// Controls
-const controls = new OrbitControls(camera, canvas);
-controls.enableDamping = true;
-
-/**
  * Renderer
  */
 // Renderer
@@ -616,11 +634,11 @@ effectComposer.setSize(sizes.width, sizes.height);
 effectComposer.setPixelRatio(sizes.pixelRatio);
 
 // Render pass
-const renderPass = new RenderPass(scene, camera);
+const renderPass = new RenderPass(scene, camera.instance);
 effectComposer.addPass(renderPass);
 
 // Bokeh pass
-const bokehPass = new BokehPass(scene, camera, {
+const bokehPass = new BokehPass(scene, camera.instance, {
   focus: 1.0,
   aperture: 0.005,
   maxblur: 0.01,
@@ -680,6 +698,87 @@ gui.Register({
 });
 
 /**
+ * View
+ */
+const view = {};
+view.settings = [
+  {
+    position: { x: 0, y: 2.124, z: -0.172 },
+    rotation: { x: -1.489, y: -Math.PI, z: 0 },
+    focus: 2.14,
+    parallaxMultiplier: 0.25,
+  },
+  {
+    position: { x: 1, y: 1.1, z: 0 },
+    rotation: { x: -0.833, y: 1.596, z: 1.651 },
+    focus: 1.1,
+    parallaxMultiplier: 0.12,
+  },
+  {
+    position: { x: 1, y: 0.87, z: -0.97 },
+    rotation: { x: -0.638, y: 2.33, z: 0 },
+    focus: 1.36,
+    parallaxMultiplier: 0.12,
+  },
+  {
+    position: { x: -1.43, y: 0.33, z: -0.144 },
+    rotation: { x: -0.312, y: -1.68, z: 0 },
+    focus: 1.25,
+    parallaxMultiplier: 0.12,
+  },
+];
+
+// Parallax
+view.parallax = {};
+view.parallax.target = {};
+view.parallax.target.x = 0;
+view.parallax.target.y = 0;
+view.parallax.eased = {};
+view.parallax.eased.x = 0;
+view.parallax.eased.y = 0;
+view.parallax.eased.multiplier = 4;
+
+window.addEventListener("mousemove", (_event) => {
+  view.parallax.target.x =
+    (_event.clientX / sizes.width - 0.5) * view.parallax.multiplier;
+  view.parallax.target.y =
+    -(_event.clientY / sizes.height - 0.5) * view.parallax.multiplier;
+});
+
+// Change
+view.change = (_index) => {
+  const viewSetting = view.settings[_index];
+
+  camera.position.copy(viewSetting.position);
+  camera.rotation.x = viewSetting.rotation.x;
+  camera.rotation.y = viewSetting.rotation.y;
+  camera.rotation.z = viewSetting.rotation.z;
+
+  bokehPass.materialBokeh.uniforms.focus.value = viewSetting.focus;
+
+  view.parallax.multiplier = viewSetting.parallaxMultiplier;
+};
+
+view.change(0);
+
+gui.Register({
+  type: "folder",
+  label: "view",
+  open: true,
+});
+
+for (const _settingIndex in view.settings) {
+  gui.Register({
+    folder: "view",
+    type: "button",
+    label: `change(${_settingIndex})`,
+    action: () => {
+      view.change(_settingIndex);
+    },
+  });
+}
+
+/**
  * Animate
  */
 const clock = new THREE.Clock();
@@ -693,8 +792,27 @@ const tick = () => {
   // Update terrain
   terrain.uniforms.uTime.value = elapsedTime;
 
-  // Update controls
-  controls.update();
+  // Update orbit controls
+  if (orbitControls.enabled) {
+    orbitControls.update();
+  }
+
+  // Camera
+  camera.instance.position.copy(camera.position);
+
+  view.parallax.eased.x +=
+    (view.parallax.target.x - view.parallax.eased.x) *
+    deltaTime *
+    view.parallax.eased.multiplier;
+  view.parallax.eased.y +=
+    (view.parallax.target.y - view.parallax.eased.y) *
+    deltaTime *
+    view.parallax.eased.multiplier;
+  camera.instance.translateX(view.parallax.eased.x);
+  camera.instance.translateY(view.parallax.eased.y);
+
+  camera.instance.rotation.x = camera.rotation.x;
+  camera.instance.rotation.y = camera.rotation.y;
 
   // Render
   // renderer.render(scene, camera);
