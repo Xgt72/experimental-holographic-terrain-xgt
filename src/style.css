@@ -19,6 +19,7 @@
 html,
 body {
   overflow: hidden;
+  background-color: #080024;
 }
 
 .webgl {
