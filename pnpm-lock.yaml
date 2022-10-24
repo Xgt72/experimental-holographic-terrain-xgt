@@ -9,6 +9,7 @@ specifiers:
   css-loader: ^5.2.7
   file-loader: ^6.2.0
   glslify-loader: ^2.0.0
+  gsap: ^3.11.3
   guify: ^0.12.0
   html-loader: ^2.1.2
   html-webpack-plugin: ^5.5.0
@@ -31,6 +32,7 @@ dependencies:
   css-loader: 5.2.7_webpack@5.65.0
   file-loader: 6.2.0_webpack@5.65.0
   glslify-loader: 2.0.0
+  gsap: 3.11.3
   guify: 0.12.0
   html-loader: 2.1.2_webpack@5.65.0
   html-webpack-plugin: 5.5.0_webpack@5.65.0
@@ -2975,6 +2977,10 @@ packages:
 
   /graceful-fs/4.2.9:
     resolution: {integrity: sha512-NtNxqUcXgpW2iMrfqSfR73Glt39K+BLwWsPs94yR63v45T0Wbej7eRmL5cWfwEgqXnmjQp3zaJTshdRW/qC2ZQ==}
+    dev: false
+
+  /gsap/3.11.3:
+    resolution: {integrity: sha512-xc/iIJy+LWiMbRa4IdMtdnnKa/7PXEK6NNzV71gdOYUVeTZN7UWnLU0fB7Hi1iwiz4ZZoYkBZPPYGg+2+zzFHA==}
     dev: false
 
   /guify/0.12.0:
